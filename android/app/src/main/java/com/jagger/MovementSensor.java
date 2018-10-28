@@ -42,17 +42,32 @@ public class MovementSensor extends ReactContextBaseJavaModule implements Sensor
 				.emit("acceleration", this.sensorDataToPoint(sensorEvent.values));
 		}
 
-		if(sensorEvent.sensor.getType() == Sensor.TYPE_ROTATION_VECTOR) {
+		if(sensorEvent.sensor.getType() == Sensor.TYPE_GAME_ROTATION_VECTOR) {
 			this.reactContext
 				.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-				.emit("orientation", this.sensorDataToPoint(sensorEvent.values));
+				.emit("orientation", this.sensorDataToPoint(this.getRotationDegrees(sensorEvent.values)));
 		}
 	}
 
 	@Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-	public WritableMap sensorDataToPoint(float[] sensorData) {
+    private float[] getRotationDegrees(float[] sensorData) {
+    	float[] degrees = new float[3];
+    	float[] q = sensorData;
+    	
+		double x = Math.atan2( -2.*(q[2]*q[3] - q[0]*q[1]) , q[0]*q[0] - q[1]*q[1]- q[2]*q[2] + q[3]*q[3]); 
+		double y = Math.asin( 2.*(q[1]*q[3] + q[0]*q[2]));
+		double z = Math.atan2( 2.*(-q[1]*q[2] + q[0]*q[3]) , q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3]); 
+
+		degrees[0] = (float) (x * (180 / Math.PI));
+		degrees[1] = (float) (y * (180 / Math.PI));
+		degrees[2] = (float) (z * (180 / Math.PI));
+
+    	return degrees;
+    }
+
+	private WritableMap sensorDataToPoint(float[] sensorData) {
 		WritableMap point = Arguments.createMap();
 
 		point.putDouble("x", sensorData[0]);
@@ -70,7 +85,7 @@ public class MovementSensor extends ReactContextBaseJavaModule implements Sensor
 
 	@ReactMethod
 	public void startOrientation() {
-		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_ROTATION_VECTOR);
+		Sensor sensor = sensorManager.getDefaultSensor(Sensor.TYPE_GAME_ROTATION_VECTOR);
 		sensorManager.registerListener(this, sensor, SensorManager.SENSOR_DELAY_FASTEST);
 	}
 }
