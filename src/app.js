@@ -22,9 +22,7 @@ export default class App extends React.Component {
 		})
 
 		this.sensorHelper.onOrientationChange(orientation => {
-			let { pitch: x, roll: y, azimuth: z } = orientation
-			this.orientation = { x, y, z }
-
+			this.orientation = orientation
 			this.broadcast()
 		})
 	}

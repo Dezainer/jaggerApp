@@ -1,13 +1,16 @@
 import { MovementSensor } from 'NativeModules'
+import { DeviceEventEmitter } from 'react-native'
 
 export default () => {
 	
 	const onAccelerometerChange = callback => {
-		MovementSensor.onAcceleration(callback)
+		MovementSensor.startAcceleration()
+		DeviceEventEmitter.addListener('acceleration', callback)
 	}
 
 	const onOrientationChange = callback => {
-		MovementSensor.onRotation(callback)
+		MovementSensor.startOrientation()
+		DeviceEventEmitter.addListener('orientation', callback)
 	}
 
 	return {
