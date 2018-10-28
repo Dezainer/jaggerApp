@@ -39,42 +39,31 @@ public class MovementSensor extends ReactContextBaseJavaModule implements Sensor
 		if(sensorEvent.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION) {
 			this.reactContext
 				.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-				.emit("acceleration", this.sensorDataToPoint(sensorEvent.values));
+				.emit("acceleration", this.formatSensorData(sensorEvent.values));
 		}
 
 		if(sensorEvent.sensor.getType() == Sensor.TYPE_GAME_ROTATION_VECTOR) {
 			this.reactContext
 				.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-				.emit("orientation", this.sensorDataToPoint(this.getRotationDegrees(sensorEvent.values)));
+				.emit("orientation", this.formatSensorData(sensorEvent.values));
 		}
 	}
 
 	@Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {}
 
-    private float[] getRotationDegrees(float[] sensorData) {
-    	float[] degrees = new float[3];
-    	float[] q = sensorData;
-    	
-		double x = Math.atan2( -2.*(q[2]*q[3] - q[0]*q[1]) , q[0]*q[0] - q[1]*q[1]- q[2]*q[2] + q[3]*q[3]); 
-		double y = Math.asin( 2.*(q[1]*q[3] + q[0]*q[2]));
-		double z = Math.atan2( 2.*(-q[1]*q[2] + q[0]*q[3]) , q[0]*q[0] + q[1]*q[1] - q[2]*q[2] - q[3]*q[3]); 
+	private WritableMap formatSensorData(float[] sensorData) {
+		WritableMap formatted = Arguments.createMap();
 
-		degrees[0] = (float) (x * (180 / Math.PI));
-		degrees[1] = (float) (y * (180 / Math.PI));
-		degrees[2] = (float) (z * (180 / Math.PI));
+		formatted.putDouble("x", sensorData[0]);
+		formatted.putDouble("y", sensorData[1]);
+		formatted.putDouble("z", sensorData[2]);
+		
+		if(sensorData.length > 3){
+			formatted.putDouble("w", sensorData[3]);
+		}
 
-    	return degrees;
-    }
-
-	private WritableMap sensorDataToPoint(float[] sensorData) {
-		WritableMap point = Arguments.createMap();
-
-		point.putDouble("x", sensorData[0]);
-		point.putDouble("y", sensorData[1]);
-		point.putDouble("z", sensorData[2]);
-
-		return point;
+		return formatted;
 	}
 
 	@ReactMethod
