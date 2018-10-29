@@ -2,8 +2,8 @@ import React from 'react'
 import { View, Text, TouchableOpacity } from 'react-native'
 import style from './style'
 
-import SensorHelper from './src/sensorHelper'
-import WebSocketHelper from './src/webSocketHelper'
+import SensorHelper from './helpers/sensorHelper'
+import WebSocketHelper from './helpers/webSocketHelper'
 
 export default class App extends React.Component {
 
@@ -22,20 +22,21 @@ export default class App extends React.Component {
 		})
 
 		this.sensorHelper.onOrientationChange(orientation => {
-			let { azimuth: x, pitch: y, roll: z } = orientation
-			this.orientation = { x, y, z }
-
+			this.orientation = orientation
 			this.broadcast()
 		})
 	}
 
 	broadcast() {
 		let { acceleration, orientation } = this
-		this.state.running && this.ws.send({ acceleration, orientation })
+		this.ws.send({
+			isRecording: this.state.isRecording,
+			data: { acceleration, orientation }
+		})
 	}
 	
 	toggleExecution() {
-		this.setState(prevState => ({ running: !prevState.running }))
+		this.setState(prevState => ({ isRecording: !prevState.isRecording }))
 	}
 
 	render() {
